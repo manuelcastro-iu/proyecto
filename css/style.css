@@ -23,3 +23,231 @@ table th, table td {
   border: 1px solid #ccc;
   padding: 8px;
 }
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #f4f6f8;
+  margin: 0;
+  padding: 0;
+}
+
+.header-principal {
+  text-align: center;
+  background-color: #1e3a8a;
+  color: white;
+  padding: 30px 20px;
+}
+
+.panel-opciones {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 40px;
+  padding: 40px;
+}
+
+.panel-cliente, .panel-admin {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  padding: 20px;
+  width: 400px;
+}
+
+.botonera form, .botonera button {
+  margin: 10px 0;
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  border: none;
+  border-radius: 6px;
+  background-color: #1e3a8a;
+  color: white;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #3b5fc4;
+}
+
+.fila-botones {
+  display: flex;
+  gap: 10px;
+}
+
+.form-mapa {
+  max-width: 400px;
+  margin: 40px auto;
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #f4f6f8;
+  margin: 0;
+  padding: 0;
+  color: #333;
+}
+header {
+  background-color: #1e3a8a;
+  color: white;
+  padding: 20px;
+  text-align: center;
+}
+
+header h1, header h2 {
+  margin: 0;
+  font-size: 28px;
+}
+form {
+  max-width: 500px;
+  margin: 30px auto;
+  background-color: white;
+  padding: 25px;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  text-align: left;
+}
+
+label {
+  font-weight: bold;
+  margin-top: 10px;
+  display: block;
+}
+
+input, select, button {
+  width: 100%;
+  margin: 8px 0;
+  padding: 10px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 15px;
+}
+
+button {
+  background-color: #1e3a8a;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+button:hover {
+  background-color: #3b5fc4;
+}
+
+table {
+  width: 95%;
+  margin: 30px auto;
+  border-collapse: collapse;
+  background-color: white;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+th, td {
+  padding: 10px;
+  border: 1px solid #ccc;
+  text-align: center;
+}
+
+th {
+  background-color: #1e3a8a;
+  color: white;
+}
+
+.acciones a {
+  margin: 0 5px;
+  text-decoration: none;
+  font-weight: bold;
+  color: #1e3a8a;
+}
+
+.acciones a:hover {
+  text-decoration: underline;
+}
+.mensaje {
+  text-align: center;
+  margin: 20px;
+  font-weight: bold;
+  color: #1e3a8a;
+}
+
+.menu {
+  text-align: center;
+  margin: 30px;
+}
+.botonera {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.botonera form, .botonera button {
+  width: 100%;
+}
+
+.fila-botones {
+  display: flex;
+  gap: 10px;
+}
+
+.fila-botones form {
+  flex: 1;
+}
+table {
+  width: 95%;
+  margin: 30px auto;
+  border-collapse: collapse;
+  background-color: white;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+th, td {
+  padding: 10px;
+  border: 1px solid #ccc;
+  text-align: center;
+}
+
+th {
+  background-color: #1e3a8a;
+  color: white;
+}
+
+form {
+  max-width: 500px;
+  margin: 30px auto;
+  background-color: white;
+  padding: 25px;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+input, button {
+  width: 100%;
+  margin: 8px 0;
+  padding: 10px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 15px;
+}
+
+button {
+  background-color: #1e3a8a;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+button:hover {
+  background-color: #3b5fc4;
+}

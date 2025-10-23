@@ -1,6 +1,8 @@
 <?php
 include 'db.php';
 
+$mensaje = '';
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $tipo = $_POST['tipo_viaje'];
   $institucion = $_POST['institucion'];
@@ -11,11 +13,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $fecha = $_POST['fecha'];
   $personas = $_POST['personas'];
 
-  // Aquí podrías guardar en una tabla "viajes_privados" si la creas
-  $mensaje = "✅ Solicitud enviada correctamente. Nos contactaremos contigo.";
-}
-?>....
+  $sql = "INSERT INTO viajes_privados (tipo_viaje, institucion, contacto, telefono, origen, destino, fecha, personas, estado)
+          VALUES ('$tipo', '$institucion', '$contacto', '$telefono', '$origen', '$destino', '$fecha', $personas, 'pendiente')";
+  $result = mysqli_query($conn, $sql);
 
+  $mensaje = $result
+    ? "✅ Solicitud enviada correctamente. El administrador la revisará."
+    : "❌ Error al enviar la solicitud: " . mysqli_error($conn);
+}
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -23,10 +29,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <title>Viajes Privados - Logittransport</title>
   <link rel="stylesheet" href="css/style.css">
   <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f6f8;
+      margin: 0;
+      padding: 0;
+    }
+    h1 {
+      text-align: center;
+      background-color: #1e3a8a;
+      color: white;
+      padding: 20px;
+      margin: 0;
+    }
     form {
       max-width: 500px;
-      margin: auto;
-      text-align: left;
+      margin: 30px auto;
+      background-color: white;
+      padding: 25px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    label {
+      font-weight: bold;
+      margin-top: 10px;
+      display: block;
     }
     input, select, button {
       width: 100%;
@@ -34,12 +61,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       padding: 10px;
       border-radius: 4px;
       border: 1px solid #ccc;
+      font-size: 15px;
     }
     button {
       background-color: #1e3a8a;
       color: white;
       border: none;
       cursor: pointer;
+      font-weight: bold;
     }
     button:hover {
       background-color: #3b5fc4;
@@ -48,6 +77,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       text-align: center;
       margin: 20px;
       font-weight: bold;
+      color: #1e3a8a;
+    }
+    .menu {
+      text-align: center;
+      margin: 30px;
     }
   </style>
 </head>
@@ -55,7 +89,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   <h1>🛣️ Solicitud de Viaje Privado</h1>
 
-  <?php if (isset($mensaje)) echo "<p class='mensaje'>$mensaje</p>"; ?>
+  <?php if ($mensaje): ?>
+    <p class="mensaje"><?= $mensaje ?></p>
+  <?php endif; ?>
 
   <form method="POST">
     <label>Tipo de viaje:</label>
@@ -92,7 +128,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <button type="submit">Enviar solicitud</button>
   </form>
 
-  <p style="text-align:center;"><a href="index.php">← Volver al menú</a></p>
+  <div class="menu">
+    <a href="index.php">← Volver al menú</a>
+  </div>
 
 </body>
 </html>
