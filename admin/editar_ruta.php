@@ -6,92 +6,100 @@ if ($_SESSION['rol'] !== 'admin') {
   exit;
 }
 
-// Insertar nueva ruta (ida y vuelta)
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['agregar'])) {
-  $origen = $_POST['ciudad_origen'];
-  $destino = $_POST['ciudad_destino'];
-
-  mysqli_query($conn, "INSERT INTO itinerarios (ciudad_origen, ciudad_destino) VALUES ('$origen', '$destino')");
-  mysqli_query($conn, "INSERT INTO itinerarios (ciudad_origen, ciudad_destino) VALUES ('$destino', '$origen')");
-}
-
-// Eliminar ruta
-if (isset($_GET['eliminar'])) {
-  $id = intval($_GET['eliminar']);
-  mysqli_query($conn, "DELETE FROM itinerarios WHERE id = $id");
-  header("Location: rutas.php");
+// Validar ID
+if (!isset($_GET['id'])) {
+  header('Location: nueva_ruta.php');
   exit;
 }
 
-// Obtener rutas existentes
-$rutas = mysqli_query($conn, "SELECT id, ciudad_origen, ciudad_destino FROM itinerarios");
+$id = intval($_GET['id']);
+
+// Actualizar ruta
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['actualizar'])) {
+  $origen = mysqli_real_escape_string($conn, $_POST['ciudad_origen']);
+  $destino = mysqli_real_escape_string($conn, $_POST['ciudad_destino']);
+  $precio = intval($_POST['precio']);
+
+  mysqli_query($conn, "UPDATE rutas_fijas SET ciudad_origen = '$origen', ciudad_destino = '$destino', precio = $precio WHERE id = $id");
+  header("Location: nueva_ruta.php");
+  exit;
+}
+
+// Obtener datos actuales
+$ruta = mysqli_query($conn, "SELECT ciudad_origen, ciudad_destino, precio FROM rutas_fijas WHERE id = $id");
+if (mysqli_num_rows($ruta) === 0) {
+  echo "<p style='text-align:center; font-weight:bold;'>Ruta no encontrada.</p>";
+  exit;
+}
+$datos = mysqli_fetch_assoc($ruta);
 ?>
 
-<style>
-  form {
-    max-width: 400px;
-    margin: auto;
-    text-align: left;
-  }
-  input, select, button {
-    width: 100%;
-    margin: 8px 0;
-    padding: 10px;
-    border-radius: 4px;
-    border: 1px solid #ccc;
-  }
-  button {
-    background-color: #1e3a8a;
-    color: white;
-    border: none;
-    cursor: pointer;
-  }
-  button:hover {
-    background-color: #3b5fc4;
-  }
-  .mensaje {
-    text-align: center;
-    margin: 20px;
-    font-weight: bold;
-  }
-</style>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Editar Ruta | Logittransport</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f6f8;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+    h2 {
+      margin-top: 30px;
+      text-align: center;
+      color: #1e3a8a;
+    }
+    form {
+      max-width: 400px;
+      margin: 20px auto;
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    input, select, button {
+      width: 100%;
+      margin: 8px 0;
+      padding: 10px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      font-size: 15px;
+    }
+    button {
+      background-color: #1e3a8a;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button:hover {
+      background-color: #3b5fc4;
+    }
+    .menu {
+      text-align: center;
+      margin: 40px;
+    }
+  </style>
+</head>
+<body>
 
-<h2 align="center">INGRESAR NUEVA RUTA</h2>
+<h2>✏️ Editar Ruta Predeterminada</h2>
 
 <form method="POST">
-  <input type="text" name="ciudad_origen" placeholder="Ciudad de origen" required>
-  <input type="text" name="ciudad_destino" placeholder="Ciudad de destino" required>
-  <button type="submit" name="agregar">Agregar Nueva Ruta</button>
+  <input type="text" name="ciudad_origen" value="<?= htmlspecialchars($datos['ciudad_origen']) ?>" required>
+  <input type="text" name="ciudad_destino" value="<?= htmlspecialchars($datos['ciudad_destino']) ?>" required>
+  <input type="number" name="precio" value="<?= $datos['precio'] ?>" min="0" required>
+  <button type="submit" name="actualizar">💾 Guardar Cambios</button>
 </form>
 
-<table width="500" border="1" align="center" cellpadding="3">
-  <tr>
-    <td colspan="4" align="center">RUTAS EXISTENTES</td>
-  </tr>
-  <tr>
-    <td bgcolor="#3399CC">Ciudad Origen</td>
-    <td bgcolor="#3399CC">Ciudad Destino</td>
-    <td bgcolor="#3399CC">Editar</td>
-    <td bgcolor="#3399CC">Eliminar</td>
-  </tr>
-
-  <?php while ($i = mysqli_fetch_assoc($rutas)) { ?>
-    <tr>
-      <td align="center"><?= $i['ciudad_origen'] ?></td>
-      <td align="center"><?= $i['ciudad_destino'] ?></td>
-      <td align="center">
-        <a href="editar_ruta.php?id=<?= $i['id'] ?>">Editar</a>
-      </td>
-      <td align="center">
-        <a href="rutas.php?eliminar=<?= $i['id'] ?>" onclick="return confirm('¿Eliminar esta ruta?')">Eliminar</a>
-      </td>
-    </tr>
-  <?php } ?>
-</table>
-
-<br><br>
-<div class="menu" align="center">
-  <form action="../index.php">
-    <button type="submit" style="width:100px">INICIO</button>
+<div class="menu">
+  <form action="nueva_ruta.php">
+    <button type="submit">🔙 Volver</button>
   </form>
 </div>
+
+</body>
+</html>

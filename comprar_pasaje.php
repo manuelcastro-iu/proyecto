@@ -10,8 +10,8 @@ $hora = '';
 // Buscar itinerario automáticamente
 if (isset($_POST['origen'], $_POST['destino'])) {
   $origen = $_POST['origen'];
-  $destino = $_POST['destino'];
-
+  $destino = $_POST['destino'];       
+    
   $buscar = mysqli_query($conn, "SELECT id, fecha, hora_salida FROM itinerarios WHERE ciudad_origen='$origen' AND ciudad_destino='$destino' LIMIT 1");
   if ($row = mysqli_fetch_assoc($buscar)) {
     $itinerario_id = $row['id'];
@@ -62,7 +62,7 @@ if ($itinerario_id) {
   <meta charset="UTF-8">
   <title>Comprar Pasaje - Logittransport</title>
   <style>
-    * { box-sizing: border-box; }
+    * { box-sizing: border-box; }   
     body {
       font-family: 'Segoe UI', sans-serif;
       background-color: #f4f6f8;
@@ -220,9 +220,9 @@ for ($fila = 0; $fila < 11; $fila++) {
 
   echo "</div>";
 }
-        ?>
+?>
       </div>
-
+ 
       <input type="hidden" name="asiento" id="asiento">
 
       <label>Nombre completo:</label>

@@ -1,58 +1,38 @@
+<?php
+// Parámetros de conexión
+$host = "localhost";
+$usuario = "root";
+$clave = "";
+$base_datos = "logittransport";
+
+// Crear conexión
+$conexion = new mysqli($host, $usuario, $clave, $base_datos);
+if ($conexion->connect_error) {
+  die("❌ Error de conexión: " . $conexion->connect_error);
+}
+
+// Obtener parámetros desde GET
+$origen = isset($_GET['origen']) ? urldecode($_GET['origen']) : 'Traiguén';
+$destino = isset($_GET['destino']) ? urldecode($_GET['destino']) : 'Victoria';
+
+// Datos ficticios del conductor
+$nombre_conductor = "Juan Pérez";
+$telefono_conductor = "+56 9 1234 5678";
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <title>Ubicación del Bus - Logittransport</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
   <style>
-    * { box-sizing: border-box; }
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #f4f6f8;
-      margin: 0;
-      padding: 0;
-      color: #333;
-    }
-    header {
-      background-color: #1e3a8a;
-      color: white;
-      padding: 30px;
-      text-align: center;
-    }
-    header h1 {
-      margin: 0;
-      font-size: 28px;
-    }
-    .container {
-      max-width: 900px;
-      margin: 30px auto;
-      padding: 20px;
-      background-color: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
-    iframe {
-      width: 100%;
-      height: 450px;
-      border: none;
-      border-radius: 6px;
-    }
-    .reloj {
-      text-align: right;
-      font-size: 16px;
-      color: #555;
-      margin-bottom: 15px;
-    }
+    body { font-family: 'Segoe UI', sans-serif; background:#f4f6f8; margin:0; padding:0; }
+    header { background:#1e3a8a; color:white; padding:30px; text-align:center; }
+    .container { max-width:900px; margin:30px auto; padding:20px; background:white; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1); }
+    #map { width:100%; height:450px; border-radius:6px; }
+    .info { margin-bottom:20px; font-size:18px; }
   </style>
-  <script>
-    function actualizarReloj() {
-      const reloj = document.getElementById('reloj');
-      const ahora = new Date();
-      const hora = ahora.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-      reloj.textContent = "🕒 Hora actual: " + hora;
-    }
-    setInterval(actualizarReloj, 1000);
-    window.onload = actualizarReloj;
-  </script>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 </head>
 <body>
 
@@ -61,14 +41,64 @@
 </header>
 
 <div class="container">
-  <div class="reloj" id="reloj"></div>
-
-  <iframe src="https://www.google.com/maps/embed?pb=!1m28!1m12!1m3!1d14806.388123259783!2d-72.5987857642985!3d-38.725621858255714!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m13!3e0!4m5!1s0x9614d3b4c4707a95%3A0x5bb3a1c96cef4268!2sSantiago%2C%20Temuco%2C%20Araucan%C3%ADa!3m2!1d-38.7186768!2d-72.5689452!4m5!1s0x9614d3cec21a2223%3A0xc2fa8887ff008408!2sTemuco%2C%20Araucan%C3%ADa!3m2!1d-38.736628599999996!2d-72.5949577!5e0!3m2!1ses-419!2scl!4v1758642090347!5m2!1ses-419!2scl"
-    allowfullscreen=""
-    loading="lazy"
-    referrerpolicy="no-referrer-when-downgrade">
-  </iframe>
+  <div class="info">
+    <p><strong>Origen:</strong> <?= htmlspecialchars($origen) ?></p>
+    <p><strong>Destino:</strong> <?= htmlspecialchars($destino) ?></p>
+    <p><strong>Conductor:</strong> <?= htmlspecialchars($nombre_conductor) ?></p>
+    <p><strong>Teléfono:</strong> <?= htmlspecialchars($telefono_conductor) ?></p>
+  </div>
+  <div id="map"></div>
 </div>
+
+<div class="menu" style="text-align:center; margin-top:20px;">
+  <form action="index.php">
+    <button type="submit" style="width:100px">INICIO</button>
+  </form>
+</div>
+
+<script>
+// Crear mapa
+var map = L.map('map').setView([-38.25, -72.67], 9); // centro aprox Araucanía
+
+// Cargar mapa base
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© OpenStreetMap contributors'
+}).addTo(map);
+
+// Función para obtener coordenadas de una ciudad usando Nominatim
+async function getCoords(city) {
+  let url = "https://nominatim.openstreetmap.org/search?format=json&q=" + encodeURIComponent(city + ", Chile");
+  let res = await fetch(url);
+  let data = await res.json();
+  if (data.length > 0) {
+    return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+  }
+  return null;
+}
+
+// Obtener coordenadas de origen y destino y dibujar ruta
+(async () => {
+  let origen = "<?= htmlspecialchars($origen) ?>";
+  let destino = "<?= htmlspecialchars($destino) ?>";
+
+  let coordOrigen = await getCoords(origen);
+  let coordDestino = await getCoords(destino);
+
+  if (coordOrigen && coordDestino) {
+    // Marcadores
+    L.marker(coordOrigen).addTo(map).bindPopup("Origen: " + origen).openPopup();
+    L.marker(coordDestino).addTo(map).bindPopup("Destino: " + destino);
+
+    // Dibujar línea de recorrido
+    var ruta = L.polyline([coordOrigen, coordDestino], {color: 'blue'}).addTo(map);
+
+    // Ajustar vista al recorrido
+    map.fitBounds(ruta.getBounds());
+  } else {
+    alert("No se pudieron encontrar coordenadas para las ciudades ingresadas.");
+  }
+})();
+</script>
 
 </body>
 </html>

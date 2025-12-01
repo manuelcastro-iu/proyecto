@@ -8,16 +8,17 @@ if ($_SESSION['rol'] !== 'admin') {
 
 // Insertar nuevo itinerario
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['agregar'])) {
-  $origen = $_POST['ciudad_origen'];
-  $destino = $_POST['ciudad_destino'];
-  $bus_id = $_POST['bus_id'];
-  $conductor_id = $_POST['conductor_id'];
+  $origen = mysqli_real_escape_string($conn, $_POST['ciudad_origen']);
+  $destino = mysqli_real_escape_string($conn, $_POST['ciudad_destino']);
+  $bus_id = intval($_POST['bus_id']);
+  $conductor_id = intval($_POST['conductor_id']);
   $fecha = $_POST['fecha'];
   $hora_salida = $_POST['hora_salida'];
   $hora_llegada = $_POST['hora_llegada'];
+  $precio = intval($_POST['precio']);
 
-  mysqli_query($conn, "INSERT INTO itinerarios (bus_id, conductor_id, ciudad_origen, ciudad_destino, fecha, hora_salida, hora_llegada)
-    VALUES ($bus_id, $conductor_id, '$origen', '$destino', '$fecha', '$hora_salida', '$hora_llegada')");
+  mysqli_query($conn, "INSERT INTO itinerarios (bus_id, conductor_id, ciudad_origen, ciudad_destino, fecha, hora_salida, hora_llegada, precio)
+    VALUES ($bus_id, $conductor_id, '$origen', '$destino', '$fecha', '$hora_salida', '$hora_llegada', $precio)");
 }
 
 // Eliminar itinerario
@@ -29,8 +30,8 @@ if (isset($_GET['eliminar'])) {
 }
 
 // Obtener buses y conductores
-$buses = mysqli_query($conn, "SELECT id, placa FROM buses");
-$conductores = mysqli_query($conn, "SELECT id, nombre FROM conductores");
+$buses = mysqli_query($conn, "SELECT id, placa, modelo FROM buses");
+$conductores = mysqli_query($conn, "SELECT id, nombre, rut FROM conductores");
 
 // Mostrar itinerarios
 $itinerarios = mysqli_query($conn, "
@@ -41,8 +42,11 @@ $itinerarios = mysqli_query($conn, "
     i.fecha,
     i.hora_salida,
     i.hora_llegada,
+    i.precio,
     b.placa,
-    c.nombre
+    b.modelo,
+    c.nombre,
+    c.rut
   FROM itinerarios i
   JOIN buses b ON i.bus_id = b.id
   JOIN conductores c ON i.conductor_id = c.id
@@ -152,7 +156,7 @@ $itinerarios = mysqli_query($conn, "
   <select name="bus_id" required>
     <option value="">Seleccionar bus</option>
     <?php while ($b = mysqli_fetch_assoc($buses)) {
-      echo "<option value='{$b['id']}'>{$b['placa']}</option>";
+      echo "<option value='{$b['id']}'>{$b['placa']} - {$b['modelo']}</option>";
     } ?>
   </select>
 
@@ -160,7 +164,7 @@ $itinerarios = mysqli_query($conn, "
   <select name="conductor_id" required>
     <option value="">Seleccionar conductor</option>
     <?php while ($c = mysqli_fetch_assoc($conductores)) {
-      echo "<option value='{$c['id']}'>{$c['nombre']}</option>";
+      echo "<option value='{$c['id']}'>{$c['nombre']} - {$c['rut']}</option>";
     } ?>
   </select>
 
@@ -172,6 +176,9 @@ $itinerarios = mysqli_query($conn, "
 
   <label>Hora de llegada:</label>
   <input type="time" name="hora_llegada" required>
+
+  <label>Precio del pasaje (CLP):</label>
+  <input type="number" name="precio" min="0" required>
 
   <button type="submit" name="agregar">➕ Agregar Ruta</button>
 </form>
@@ -185,17 +192,19 @@ $itinerarios = mysqli_query($conn, "
     <th>Fecha</th>
     <th>Salida</th>
     <th>Llegada</th>
+    <th>Precio</th>
     <th>Acciones</th>
   </tr>
   <?php while ($i = mysqli_fetch_assoc($itinerarios)) { ?>
     <tr>
-      <td><?= $i['placa'] ?></td>
-      <td><?= $i['nombre'] ?></td>
+      <td><?= $i['placa'] ?> - <?= $i['modelo'] ?></td>
+      <td><?= $i['nombre'] ?> - <?= $i['rut'] ?></td>
       <td><?= $i['ciudad_origen'] ?></td>
       <td><?= $i['ciudad_destino'] ?></td>
       <td><?= $i['fecha'] ?></td>
       <td><?= $i['hora_salida'] ?></td>
       <td><?= $i['hora_llegada'] ?></td>
+      <td><?= number_format($i['precio'], 0, ',', '.') ?> CLP</td>
       <td class="acciones">
         <a href="editar_itinerario.php?id=<?= $i['itinerario_id'] ?>">✏️ Editar</a>
         <a href="?eliminar=<?= $i['itinerario_id'] ?>" onclick="return confirm('¿Eliminar esta ruta?')">🗑️ Eliminar</a>

@@ -1,5 +1,4 @@
 <?php
-include '../estilo_menu.php';
 include '../db.php';
 session_start();
 if ($_SESSION['rol'] !== 'admin') {

@@ -1,14 +1,37 @@
 <?php
 session_start();
 include 'db.php';
+
 $esAdmin = isset($_SESSION['usuario']) && $_SESSION['rol'] === 'admin';
+
+// Generar itinerarios diarios si no existen
+$hoy = date('Y-m-d');
+$fijos = mysqli_query($conn, "SELECT * FROM itinerarios_fijos WHERE activo = 1");
+
+while ($fijo = mysqli_fetch_assoc($fijos)) {
+  $bus_id = $fijo['bus_id'];
+  $conductor_id = $fijo['conductor_id'];
+  $origen = mysqli_real_escape_string($conn, $fijo['ciudad_origen']);
+  $destino = mysqli_real_escape_string($conn, $fijo['ciudad_destino']);
+  $salida = $fijo['hora_salida'];
+  $llegada = $fijo['hora_llegada'];
+  $precio = intval($fijo['precio']);
+
+  $existe = mysqli_query($conn, "SELECT id FROM itinerarios WHERE bus_id = $bus_id AND fecha = '$hoy' AND hora_salida = '$salida'");
+  if (mysqli_num_rows($existe) === 0) {
+    mysqli_query($conn, "INSERT INTO itinerarios (bus_id, conductor_id, ciudad_origen, ciudad_destino, fecha, hora_salida, hora_llegada, precio)
+      VALUES ($bus_id, $conductor_id, '$origen', '$destino', '$hoy', '$salida', '$llegada', $precio)");
+  }
+}
 ?>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <title>Logittransport</title>
   <style>
+    /* Estilos originales conservados */
     * { box-sizing: border-box; }
     body {
       font-family: 'Segoe UI', sans-serif;
@@ -16,10 +39,10 @@ $esAdmin = isset($_SESSION['usuario']) && $_SESSION['rol'] === 'admin';
       background-size: cover;
       margin: 0;
       padding: 0;
-      color: #333;
+      color: #000000ff;
     }
     header {
-      background-color: rgba(115, 115, 115, 0);
+      background-color: rgba(0, 0, 0, 0);
       color: white;
       padding: 30px 20px;
       text-align: center;
@@ -100,7 +123,7 @@ $esAdmin = isset($_SESSION['usuario']) && $_SESSION['rol'] === 'admin';
       margin: 10px 0;
       padding: 12px;
       border-radius: 4px;
-      border: 1px solid #ccc;
+      border: 1px solid #121212ff;
     }
     .form-mapa button {
       background-color: #1e3a8a;
@@ -118,8 +141,6 @@ $esAdmin = isset($_SESSION['usuario']) && $_SESSION['rol'] === 'admin';
 </head>
 <body>
 
-<?php include 'estilo_menu.php'; ?>
-
 <header>
   <h1>Bienvenido a Logittransport</h1>
   <p>Selecciona una opción para continuar</p>
@@ -129,44 +150,35 @@ $esAdmin = isset($_SESSION['usuario']) && $_SESSION['rol'] === 'admin';
   <section>
     <h2>Servicios para pasajeros</h2>
     <div class="botonera">
-      <form action="comprar_pasaje.php">
-        <button type="submit">🎟️ Comprar Pasaje</button>
-      </form>
-      <form action="ver_pasaje.php">
-        <button type="submit">📋 Ver Mis Pasajes</button>
-      </form>
-      <form action="viajes_privados.php">
-        <button type="submit">🛣️ Itinerario de Viajes Privados</button>
-      </form>
+      <form action="comprar_pasaje.php"><button>🎟️ Comprar Pasaje</button></form>
+      <form action="ver_pasaje.php"><button>📋 Ver Mis Pasajes</button></form>
+      <form action="viajes_privados.php"><button>🛣️ Itinerario de Viajes Privados</button></form>
       <button onclick="mostrarFormulario()">🗺️ ¿Dónde va el bus?</button>
     </div>
   </section>
 
+  <?php if ($esAdmin): ?>
   <section>
     <h2>Gestión administrativa</h2>
     <div class="botonera">
-      <form action="<?= $esAdmin ? 'admin/pasajes.php' : 'login.php' ?>">
-        <button type="submit">Gestor de Pasajes</button>
-      </form>
-      <form action="<?= $esAdmin ? 'admin/conductores.php' : 'login.php' ?>">
-        <button type="submit">Gestor de Conductores</button>
-      </form>
-      <form action="<?= $esAdmin ? 'admin/viajes_privados.php' : 'login.php' ?>">
-        <button type="submit">✅ Aceptar Viaje Privado</button>
-      </form>
+      <form action="admin/pasajes.php"><button>Gestor de Pasajes</button></form>
+      <form action="admin/conductores.php"><button>Gestor de Conductores</button></form>
+      <form action="admin/viajes_privados.php"><button>✅ Aceptar Viaje Privado</button></form>
       <div class="fila-botones">
-        <form action="<?= $esAdmin ? 'admin/itinerarios.php' : 'login.php' ?>">
-          <button type="submit">Gestor de Rutas</button>
-        </form>
-        <form action="<?= $esAdmin ? 'admin/nueva_ruta.php' : 'login.php' ?>">
-          <button type="submit">Nueva Ruta</button>
-        </form>
-        <form action="<?= $esAdmin ? 'admin/buses.php' : 'login.php' ?>">
-          <button type="submit">Gestor de Buses</button>
-        </form>
+        <form action="admin/itinerarios.php"><button>Gestor de Rutas</button></form>
+        <form action="admin/nueva_ruta.php"><button>Nueva Ruta</button></form>
+        <form action="admin/buses.php"><button>Gestor de Buses</button></form>
       </div>
     </div>
   </section>
+
+  <section>
+    <h2>🔐 Sesión</h2>
+    <div class="botonera">
+      <form action="logout.php"><button>🔓 Cerrar sesión</button></form>
+    </div>
+  </section>
+  <?php endif; ?>
 </main>
 
 <section class="form-mapa" id="formMapa">
@@ -183,8 +195,6 @@ $esAdmin = isset($_SESSION['usuario']) && $_SESSION['rol'] === 'admin';
     document.getElementById('formMapa').style.display = 'block';
   }
 </script>
-<form action="logout.php" method="POST" style="text-align:right; margin: 10px;">
-  <button type="submit">🔓 Cerrar sesión</button>
-</form>
+
 </body>
 </html>
